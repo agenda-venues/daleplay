@@ -6,20 +6,20 @@
 <title>dale.venues · Agenda</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;0,9..144,800&family=DM+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --bg:#111009;--surface:#171510;--surface2:#1E1B14;--border:#2A2720;
-  --accent:#FF7248;--pulse:#FF9B7A;--green:#22C55E;--yellow:#F59E0B;--red:#EF4444;--blue:#60A5FA;
-  --text:#F8F7F5;--muted:#71717A;--secondary:#A1A1AA;--sidebar-w:220px;
-  --mono:'DM Mono',monospace;--display:'Fraunces',Georgia,serif;
+  --bg:#100E17;--surface:#181521;--surface2:#211B30;--border:#2E2842;
+  --accent:#8B5CF6;--pulse:#A78BFA;--green:#22C55E;--yellow:#F59E0B;--red:#EF4444;--blue:#60A5FA;
+  --text:#F5F3FA;--muted:#8B84A0;--secondary:#B4AECA;--sidebar-w:220px;
+  --mono:'DM Mono',monospace;--display:'Space Grotesk',sans-serif;color-scheme:dark;
 }
 [data-theme="light"]{
-  --bg:#F7F3EC;--surface:#FFFDF8;--surface2:#F0EBE0;--border:#E2D9CC;
-  --accent:#FF7248;--pulse:#E85E35;--green:#16A34A;--yellow:#D97706;--red:#DC2626;--blue:#2563EB;
-  --text:#1C1814;--muted:#7C6F61;--secondary:#5C5047;
+  --bg:#F5F3FB;--surface:#FFFFFF;--surface2:#F0EDF9;--border:#E4DFF2;
+  --accent:#7C3AED;--pulse:#6D28D9;--green:#16A34A;--yellow:#D97706;--red:#DC2626;--blue:#2563EB;
+  --text:#1C1826;--muted:#6B6480;--secondary:#4B4560;color-scheme:light;
 }
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:13px;overflow-x:hidden;width:100%;}
+body{font-family:'Manrope',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:13px;overflow-x:hidden;width:100%;}
 html{overflow-x:hidden;width:100%;}
 ::-webkit-scrollbar{width:0;height:0;}
 #login-overlay{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;padding:16px;}
@@ -27,9 +27,9 @@ html{overflow-x:hidden;width:100%;}
 .login-logo{font-family:var(--display);font-size:26px;font-weight:700;margin-bottom:6px;}
 .login-logo span{color:var(--accent);}
 .login-sub{font-size:12px;color:var(--muted);margin-bottom:28px;}
-.login-box input{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:10px 14px;font-size:13px;font-family:'Inter',sans-serif;margin-bottom:12px;outline:none;}
+.login-box input{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:10px 14px;font-size:13px;font-family:'Manrope',sans-serif;margin-bottom:12px;outline:none;}
 .login-box input:focus{border-color:var(--accent);}
-.login-box button{width:100%;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:11px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;}
+.login-box button{width:100%;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:11px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Manrope',sans-serif;}
 .login-box button:hover{background:var(--pulse);}
 .login-error{font-size:12px;color:var(--red);margin-top:8px;display:none;}
 #app{display:none;}
@@ -41,9 +41,9 @@ html{overflow-x:hidden;width:100%;}
 .sidebar{width:var(--sidebar-w);flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;transition:transform 0.25s ease;z-index:300;}
 .sidebar-logo{padding:20px 20px 16px;border-bottom:1px solid var(--border);font-family:var(--display);font-size:17px;font-weight:700;}
 .sidebar-logo span{color:var(--accent);}
-.sidebar-logo .tagline{font-size:10px;color:var(--muted);font-weight:400;display:block;margin-top:2px;font-family:'Inter',sans-serif;}
+.sidebar-logo .tagline{font-size:10px;color:var(--muted);font-weight:400;display:block;margin-top:2px;font-family:'Manrope',sans-serif;}
 .sidebar-section{padding:14px 12px 6px;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;font-weight:600;}
-.nav-item{display:flex;align-items:center;gap:9px;padding:8px 12px;border-radius:7px;margin:1px 8px;cursor:pointer;font-size:13px;color:var(--secondary);transition:all 0.12s;border:none;background:none;width:calc(100% - 16px);text-align:left;font-family:'Inter',sans-serif;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 12px;border-radius:7px;margin:1px 8px;cursor:pointer;font-size:13px;color:var(--secondary);transition:all 0.12s;border:none;background:none;width:calc(100% - 16px);text-align:left;font-family:'Manrope',sans-serif;}
 .nav-item:hover{background:var(--surface2);color:var(--text);}
 .nav-item.active{background:rgba(255,114,72,0.1);color:var(--accent);border-left:2px solid var(--accent);}
 .nav-item .icon{font-size:14px;width:18px;text-align:center;}
@@ -66,7 +66,7 @@ input:checked+.theme-slider:before{transform:translateX(14px);background:#fff;}
 .page-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;gap:12px;flex-wrap:wrap;}
 .page-title{font-family:var(--display);font-size:22px;font-weight:600;letter-spacing:-0.3px;}
 .page-sub{font-size:12px;color:var(--muted);margin-top:3px;}
-.btn{padding:8px 15px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:'Inter',sans-serif;transition:all 0.15s;white-space:nowrap;}
+.btn{padding:8px 15px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:'Manrope',sans-serif;transition:all 0.15s;white-space:nowrap;}
 .btn-primary{background:var(--accent);color:#fff;}
 .btn-primary:hover{background:var(--pulse);}
 .btn-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
@@ -77,7 +77,7 @@ input:checked+.theme-slider:before{transform:translateX(14px);background:#fff;}
 .kpi-value{font-family:var(--display);font-size:22px;font-weight:700;}
 .kpi-value.dim{color:var(--muted);}
 .week-nav{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
-.week-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:6px 13px;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.12s;}
+.week-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:6px 13px;font-size:13px;cursor:pointer;font-family:'Manrope',sans-serif;transition:all 0.12s;}
 .week-btn:hover{border-color:var(--accent);color:var(--accent);}
 .week-period{font-family:var(--display);font-size:15px;font-weight:600;min-width:210px;}
 .week-tag{font-size:10px;color:var(--muted);font-family:var(--mono);}
@@ -85,7 +85,7 @@ input:checked+.theme-slider:before{transform:translateX(14px);background:#fff;}
 /* ── LISTA POR ÁREA ── */
 .area-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:14px;overflow:hidden;}
 .area-block-head{display:flex;align-items:center;gap:10px;padding:12px 18px;border-bottom:1px solid var(--border);background:var(--surface2);}
-.tr-addbtn{background:none;border:1px solid var(--border);color:var(--accent);border-radius:7px;padding:5px 12px;font-size:11px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;}
+.tr-addbtn{background:none;border:1px solid var(--border);color:var(--accent);border-radius:7px;padding:5px 12px;font-size:11px;cursor:pointer;font-family:'Manrope',sans-serif;font-weight:600;}
 .tr-addbtn:hover{background:rgba(255,114,72,0.1);border-color:var(--accent);}
 .task-row{display:flex;align-items:center;gap:13px;padding:12px 18px;border-bottom:1px solid var(--border);}
 .task-row:last-child{border-bottom:none;}
@@ -97,6 +97,10 @@ input:checked+.theme-slider:before{transform:translateX(14px);background:#fff;}
 .tr-controls{display:flex;align-items:center;gap:7px;flex-shrink:0;}
 .tr-controls .estado-sel{width:120px;flex:none;}
 .tr-empty{padding:15px 18px;font-size:11px;color:var(--muted);}
+.cfg-row{display:flex;align-items:center;gap:8px;}
+.cfg-inp{flex:1;min-width:0;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:8px 11px;font-size:12px;font-family:'Manrope',sans-serif;outline:none;}
+.cfg-inp:focus{border-color:var(--accent);}
+.cfg-color{width:38px;height:34px;padding:2px;border:1px solid var(--border);border-radius:7px;background:var(--surface2);cursor:pointer;flex-shrink:0;}
 .area-col{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;}
 .area-head{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px;}
 .area-bar{width:4px;height:26px;border-radius:3px;flex-shrink:0;}
@@ -111,19 +115,16 @@ input:checked+.theme-slider:before{transform:translateX(14px);background:#fff;}
 .task-x:hover{color:var(--red);}
 .task-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
 .chip{display:inline-flex;align-items:center;font-size:10px;padding:2px 7px;border-radius:20px;font-weight:600;}
-.chip-pal{background:rgba(255,114,72,0.15);color:#FF9B7A;}
-.chip-ros{background:rgba(217,119,6,0.2);color:#FCD34D;}
-.chip-cba{background:rgba(5,150,105,0.2);color:#6EE7B7;}
-.chip-gen{background:rgba(107,114,128,0.2);color:#9CA3AF;}
+.chip-v{background:rgba(139,92,246,0.16);color:var(--pulse);}
 .task-note{font-size:11px;color:var(--muted);line-height:1.4;border-top:1px dashed var(--border);padding-top:7px;margin-bottom:8px;}
 .task-note b{color:var(--secondary);font-weight:600;}
 .task-foot{display:flex;gap:6px;align-items:center;}
-.estado-sel{flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 7px;font-size:11px;font-family:'Inter',sans-serif;outline:none;cursor:pointer;}
-.mini-btn{background:var(--surface);border:1px solid var(--border);color:var(--secondary);border-radius:6px;padding:5px 8px;font-size:11px;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;}
+.estado-sel{flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 7px;font-size:11px;font-family:'Manrope',sans-serif;outline:none;cursor:pointer;}
+.mini-btn{background:var(--surface);border:1px solid var(--border);color:var(--secondary);border-radius:6px;padding:5px 8px;font-size:11px;cursor:pointer;font-family:'Manrope',sans-serif;white-space:nowrap;}
 .mini-btn:hover{border-color:var(--accent);color:var(--accent);}
 .est-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:5px;flex-shrink:0;}
 .area-add{padding:9px 10px;border-top:1px solid var(--border);}
-.area-add button{width:100%;background:none;border:1px dashed var(--border);color:var(--muted);border-radius:7px;padding:7px;font-size:11px;cursor:pointer;font-family:'Inter',sans-serif;}
+.area-add button{width:100%;background:none;border:1px dashed var(--border);color:var(--muted);border-radius:7px;padding:7px;font-size:11px;cursor:pointer;font-family:'Manrope',sans-serif;}
 .area-add button:hover{border-color:var(--accent);color:var(--accent);}
 .empty-mini{font-size:11px;color:var(--muted);text-align:center;padding:14px 0;}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:16px;}
@@ -153,7 +154,7 @@ input:checked+.theme-slider:before{transform:translateX(14px);background:#fff;}
 .modal-x{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1;}
 .modal-body{padding:20px 22px;display:flex;flex-direction:column;gap:14px;}
 .fld label{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;font-weight:600;}
-.fld input,.fld select,.fld textarea{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:9px 12px;font-size:13px;font-family:'Inter',sans-serif;outline:none;}
+.fld input,.fld select,.fld textarea{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:9px 12px;font-size:13px;font-family:'Manrope',sans-serif;outline:none;}
 .fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--accent);}
 .fld textarea{resize:vertical;min-height:64px;line-height:1.5;}
 .fld-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
@@ -201,6 +202,7 @@ input:checked+.theme-slider:before{transform:translateX(14px);background:#fff;}
     <button class="nav-item active" onclick="nav('tablero')"><span class="icon">&#9776;</span>Tablero semanal</button>
     <button class="nav-item" onclick="nav('areas')"><span class="icon">&#9635;</span>Por área</button>
     <button class="nav-item" onclick="nav('reporte')"><span class="icon">&#9636;</span>Reporte / Export</button>
+    <button class="nav-item" id="nav-config" onclick="nav('config')"><span class="icon">&#9881;</span>Configuración</button>
     <div class="sidebar-bottom">
       <div class="user-line" id="user-line" style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--text);margin-bottom:10px;padding:6px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px"></div>
       <div class="sync-status"><div class="sync-dot" id="sync-dot"></div><span id="sync-label">Modo local</span></div>
@@ -269,11 +271,27 @@ input:checked+.theme-slider:before{transform:translateX(14px);background:#fff;}
         <div class="card-header">Detalle de la semana</div>
         <div class="tbl-wrap">
           <table class="tbl">
-            <thead><tr><th>Área</th><th>Resp.</th><th>Venue</th><th>Tarea</th><th>Estado</th><th>Última nota</th></tr></thead>
+            <thead><tr><th>Área</th><th>Resp.</th><th>Venue</th><th>Tarea</th><th>Vto.</th><th>Estado</th><th>Última nota</th></tr></thead>
             <tbody id="report-tbody"></tbody>
           </table>
         </div>
       </div>
+    </div>
+
+    <!-- ══ CONFIGURACIÓN ══ -->
+    <div class="view" id="view-config">
+      <div class="page-header">
+        <div><div class="page-title">Configuración</div><div class="page-sub">Editá áreas, responsables y venues. Se guarda solo.</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header">Áreas y responsables <button class="tr-addbtn" onclick="cfgAddArea()">+ área</button></div>
+        <div id="cfg-areas" style="padding:12px 16px;display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+      <div class="card">
+        <div class="card-header">Venues <button class="tr-addbtn" onclick="cfgAddVenue()">+ venue</button></div>
+        <div id="cfg-venues" style="padding:12px 16px;display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);padding:4px 2px">Los cambios se aplican al instante en toda la app. Si borrás un área o venue, las tareas ya cargadas con ese nombre se siguen viendo, pero no vas a poder elegirlo para tareas nuevas.</div>
     </div>
   </main>
 </div>
@@ -295,6 +313,7 @@ input:checked+.theme-slider:before{transform:translateX(14px);background:#fff;}
         <div class="fld"><label>Venue</label><select id="f-venue"></select></div>
         <div class="fld"><label>Estado</label><select id="f-estado"></select></div>
       </div>
+      <div class="fld"><label>Vencimiento (para cuándo tiene que estar)</label><input type="date" id="f-vto"></div>
       <div class="fld"><label>Tarea</label><textarea id="f-tarea" placeholder="Ej: Presentar documentación de habilitación municipal"></textarea></div>
       <div class="fld"><label>Nota / status (opcional)</label><textarea id="f-nota" placeholder="Ej: Enviado a estudio, esperando respuesta"></textarea></div>
     </div>
@@ -311,7 +330,7 @@ input:checked+.theme-slider:before{transform:translateX(14px);background:#fff;}
    Si queda vacío, funciona local (localStorage) en cada navegador.
    ══════════════════════════════════════════════════════════ */
 const CONFIG = {
-  SHEET_ID  : '',   // ID del Google Sheet (pestaña "Agenda")  — opcional
+  SHEET_ID  : '1TlmygZX_Ow3p9tuSyswBkDYntk0nc6d2R7_LSlQVQUs',   // Google Sheet "Agenda Venues"
   SCRIPT_URL: ''    // URL del Apps Script publicado (POST)      — opcional
 };
 
@@ -326,21 +345,32 @@ const USERS = {
   'hernan': { pass:'dpvenues', nombre:'Hernán', role:'area'  }
 };
 
-/* ── Áreas y responsables (según tu equipo) ── */
-const AREAS = {
-  'Administración': { resp:'Diego',  color:'var(--accent)' },
-  'Pagos':          { resp:'Diego',  color:'var(--pulse)'  },
-  'Comercial':      { resp:'Turco',  color:'var(--green)'  },
-  'Legales':        { resp:'Manuel', color:'var(--yellow)' },
-  'Obra':           { resp:'Hernán', color:'var(--blue)'   }
+/* ── Áreas y venues (EDITABLES desde el panel Configuración) ── */
+const DEFAULT_SETTINGS = {
+  areas:[
+    { nombre:'Administración', resp:'Diego',  color:'#8B5CF6' },
+    { nombre:'Pagos',          resp:'Diego',  color:'#A78BFA' },
+    { nombre:'Comercial',      resp:'Turco',  color:'#22C55E' },
+    { nombre:'Legales',        resp:'Manuel', color:'#F59E0B' },
+    { nombre:'Obra',           resp:'Hernán', color:'#60A5FA' }
+  ],
+  venues:['Arena Rosario','Arena Córdoba','Music Hall - Palermo','General']
 };
-const AREA_ORDER = Object.keys(AREAS);
-
-const VENUES = ['Palermo','Rosario','Córdoba','General'];
-function venueChip(v){
-  const m={Palermo:'chip-pal',Rosario:'chip-ros','Córdoba':'chip-cba',General:'chip-gen'};
-  return `<span class="chip ${m[v]||'chip-gen'}">${v||'General'}</span>`;
+let SETTINGS = loadSettings();
+let AREAS = {}, AREA_ORDER = [], VENUES = [];
+function loadSettings(){
+  const raw=safeGet('va-settings');
+  if(raw){ try{ return JSON.parse(raw); }catch(e){} }
+  return JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
 }
+function saveSettings(){ safeSet('va-settings',JSON.stringify(SETTINGS)); }
+function rebuildLookups(){
+  AREAS={}; AREA_ORDER=[];
+  SETTINGS.areas.forEach(function(a){ AREAS[a.nombre]={resp:a.resp,color:a.color}; AREA_ORDER.push(a.nombre); });
+  VENUES=SETTINGS.venues.slice();
+}
+rebuildLookups();
+function venueChip(v){ return v?`<span class="chip chip-v">${escapeHtml(v)}</span>`:''; }
 
 /* ── Estados y su color ── */
 const ESTADOS = ['Nueva','En proceso','Avanzada','Finalizada','Trabada'];
@@ -407,6 +437,7 @@ function doLogin(){
     CURRENT_USER={key:u,nombre:acc.nombre||u,role:acc.role||'area'};
     document.getElementById('login-overlay').style.display='none';
     document.getElementById('app').style.display='flex';
+    if(CURRENT_USER.role!=='admin'){ const nc=document.getElementById('nav-config'); if(nc) nc.style.display='none'; }
     renderUserLine();
     loadTasks();
   } else {
@@ -418,7 +449,7 @@ function logout(){ location.reload(); }
 function renderUserLine(){
   const el=document.getElementById('user-line');
   if(!el||!CURRENT_USER) return;
-  el.innerHTML=`<span>👤 ${CURRENT_USER.nombre}</span><button onclick="logout()" style="background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;text-decoration:underline;font-family:'Inter',sans-serif">Salir</button>`;
+  el.innerHTML=`<span>👤 ${CURRENT_USER.nombre}</span><button onclick="logout()" style="background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;text-decoration:underline;font-family:'Manrope',sans-serif">Salir</button>`;
 }
 
 /* ══ SIDEBAR / NAV ══ */
@@ -428,11 +459,12 @@ function nav(name){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
   document.getElementById('view-'+name).classList.add('active');
-  const idx={tablero:0,areas:1,reporte:2}[name];
+  const idx={tablero:0,areas:1,reporte:2,config:3}[name];
   document.querySelectorAll('.nav-item')[idx].classList.add('active');
   closeSidebar();
   if(name==='areas') renderAreas();
   if(name==='reporte') renderReport();
+  if(name==='config') renderConfig();
 }
 
 /* ══ CARGA DE DATOS ══
@@ -449,8 +481,8 @@ async function loadTasks(){
           semana:normWeek(r.Semana),
           area,
           resp:r.Responsable||(AREAS[area]?AREAS[area].resp:''),
-          venue:r.Venue||'General', tarea:r.Tarea, estado:r.Estado||'Nueva',
-          nota:r.Nota||'', updated:r.Actualizado||''
+          venue:r.Venue||'', tarea:r.Tarea, estado:r.Estado||'Nueva',
+          vto:r.Vencimiento||'', nota:r.Nota||'', updated:r.Actualizado||''
         };
       });
       setSync('ok');
@@ -543,6 +575,7 @@ function taskRow(t){
       ${note}
     </div>
     ${venueChip(t.venue)}
+    ${dueBadge(t.vto)}
     <div class="tr-controls">
       <select class="estado-sel" onchange="quickEstado('${t.id}',this.value)">${opts}</select>
       <button class="mini-btn" onclick="openTaskModal(null,'${t.id}')">Editar</button>
@@ -551,6 +584,20 @@ function taskRow(t){
   </div>`;
 }
 function escapeHtml(s){ return String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function escapeAttr(s){ return String(s||'').replace(/"/g,'&quot;'); }
+/* Badge de vencimiento: rojo si venció o falta poco, amarillo si está cerca */
+function dueBadge(vto){
+  if(!vto) return '';
+  const d=toDate(vto); if(!d) return '';
+  const hoy=new Date(); hoy.setHours(0,0,0,0);
+  const days=Math.ceil((d-hoy)/(1000*60*60*24));
+  const f=d.toLocaleDateString('es-AR',{day:'2-digit',month:'short'});
+  let bg='rgba(139,132,160,0.16)',col='var(--secondary)',txt='Vto '+f;
+  if(days<0){ bg='rgba(239,68,68,0.2)'; col='#FCA5A5'; txt='Venció '+f; }
+  else if(days<=3){ bg='rgba(239,68,68,0.14)'; col='#FCA5A5'; }
+  else if(days<=7){ bg='rgba(245,158,11,0.16)'; col='#FCD34D'; }
+  return `<span class="badge" style="background:${bg};color:${col}" title="Vencimiento">${txt}</span>`;
+}
 
 /* ── Cambio rápido de estado (flujo del viernes) ── */
 function quickEstado(id,val){
@@ -588,6 +635,7 @@ function openTaskModal(presetArea,editId){
     document.getElementById('f-venue').value=t.venue;
     document.getElementById('f-estado').value=t.estado;
     document.getElementById('f-tarea').value=t.tarea;
+    document.getElementById('f-vto').value=t.vto||'';
     document.getElementById('f-nota').value=t.nota||'';
   } else {
     document.getElementById('modal-title').textContent='Nueva tarea · '+fmtRange(curWeek);
@@ -595,6 +643,7 @@ function openTaskModal(presetArea,editId){
     if(presetArea) document.getElementById('f-area').value=presetArea;
     document.getElementById('f-estado').value='Nueva';
     document.getElementById('f-tarea').value='';
+    document.getElementById('f-vto').value='';
     document.getElementById('f-nota').value='';
   }
   syncResp();
@@ -608,9 +657,10 @@ function saveTask(){
   if(!tarea){ document.getElementById('f-tarea').focus(); return; }
   const area=document.getElementById('f-area').value;
   const data={
-    area, resp:AREAS[area].resp,
+    area, resp:AREAS[area]?AREAS[area].resp:'',
     venue:document.getElementById('f-venue').value,
     estado:document.getElementById('f-estado').value,
+    vto:document.getElementById('f-vto').value,
     tarea, nota:document.getElementById('f-nota').value.trim(),
     updated:new Date().toLocaleDateString('es-AR')
   };
@@ -676,29 +726,28 @@ function renderReport(){
   tb.innerHTML=sorted.length? sorted.map(t=>`<tr>
     <td><span class="est-dot" style="background:${AREAS[t.area]?AREAS[t.area].color:'var(--muted)'}"></span>${t.area}</td>
     <td>${t.resp}</td><td>${venueChip(t.venue)}</td>
-    <td>${escapeHtml(t.tarea)}</td><td>${estadoBadge(t.estado)}</td>
+    <td>${escapeHtml(t.tarea)}</td><td>${dueBadge(t.vto)||'<span style="color:var(--muted)">-</span>'}</td><td>${estadoBadge(t.estado)}</td>
     <td style="color:var(--muted)">${escapeHtml(t.nota||'-')}</td>
-  </tr>`).join('') : `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:26px">Sin tareas esta semana</td></tr>`;
+  </tr>`).join('') : `<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:26px">Sin tareas esta semana</td></tr>`;
 }
 
 /* ══ EXPORT ══ */
 function reportRows(){
   const t=TASKS.filter(x=>x.semana===weekKey(repWeek))
     .sort((a,b)=>AREA_ORDER.indexOf(a.area)-AREA_ORDER.indexOf(b.area));
-  return t.map(x=>({Semana:x.semana,'Área':x.area,Responsable:x.resp,Venue:x.venue,Tarea:x.tarea,Estado:x.estado,Nota:x.nota||'',Actualizado:x.updated||''}));
+  return t.map(x=>({Semana:x.semana,'Área':x.area,Responsable:x.resp,Venue:x.venue,Tarea:x.tarea,Vencimiento:x.vto||'',Estado:x.estado,Nota:x.nota||'',Actualizado:x.updated||''}));
 }
 function exportExcel(){
   if(typeof XLSX==='undefined'){ exportCSV(); return; }
   const rows=reportRows();
   const wb=XLSX.utils.book_new();
-  const ws=XLSX.utils.json_to_sheet(rows,{header:['Semana','Área','Responsable','Venue','Tarea','Estado','Nota','Actualizado']});
-  ws['!cols']=[{wch:12},{wch:15},{wch:12},{wch:10},{wch:48},{wch:12},{wch:40},{wch:12}];
+  const ws=XLSX.utils.json_to_sheet(rows,{header:['Semana','Área','Responsable','Venue','Tarea','Vencimiento','Estado','Nota','Actualizado']});
+  ws['!cols']=[{wch:12},{wch:15},{wch:12},{wch:16},{wch:48},{wch:12},{wch:12},{wch:40},{wch:12}];
   XLSX.utils.book_append_sheet(wb,ws,'Agenda');
-  // Resumen por área
   const res=AREA_ORDER.map(a=>{
     const l=rows.filter(r=>r['Área']===a);
     const c=e=>l.filter(r=>r.Estado===e).length;
-    return {'Área':a,Responsable:AREAS[a].resp,Total:l.length,Nuevas:c('Nueva'),'En proceso':c('En proceso'),Avanzadas:c('Avanzada'),Finalizadas:c('Finalizada'),Trabadas:c('Trabada')};
+    return {'Área':a,Responsable:AREAS[a]?AREAS[a].resp:'',Total:l.length,Nuevas:c('Nueva'),'En proceso':c('En proceso'),Avanzadas:c('Avanzada'),Finalizadas:c('Finalizada'),Trabadas:c('Trabada')};
   });
   const ws2=XLSX.utils.json_to_sheet(res);
   XLSX.utils.book_append_sheet(wb,ws2,'Resumen');
@@ -706,12 +755,35 @@ function exportExcel(){
 }
 function exportCSV(){
   const rows=reportRows();
-  const heads=['Semana','Área','Responsable','Venue','Tarea','Estado','Nota','Actualizado'];
+  const heads=['Semana','Área','Responsable','Venue','Tarea','Vencimiento','Estado','Nota','Actualizado'];
   const csv=[heads.join(',')].concat(rows.map(r=>heads.map(h=>`"${String(r[h]||'').replace(/"/g,'""')}"`).join(','))).join('\n');
   const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
   a.download=`Reporte_Venues_${weekKey(repWeek)}.csv`; a.click();
 }
+
+/* ══ CONFIGURACIÓN (editar áreas / personas / venues) ══ */
+function renderConfig(){
+  const ac=document.getElementById('cfg-areas');
+  ac.innerHTML=SETTINGS.areas.map((a,i)=>`<div class="cfg-row">
+    <input class="cfg-inp" value="${escapeAttr(a.nombre)}" placeholder="Nombre del área" onchange="cfgArea(${i},'nombre',this.value)">
+    <input class="cfg-inp" value="${escapeAttr(a.resp)}" placeholder="Responsable" onchange="cfgArea(${i},'resp',this.value)">
+    <input type="color" class="cfg-color" value="${a.color||'#8B5CF6'}" onchange="cfgArea(${i},'color',this.value)" title="Color">
+    <button class="mini-btn" title="Borrar" onclick="cfgDelArea(${i})">&times;</button>
+  </div>`).join('') || '<div class="tr-empty">Sin áreas. Agregá una con "+ área".</div>';
+  const vc=document.getElementById('cfg-venues');
+  vc.innerHTML=SETTINGS.venues.map((v,i)=>`<div class="cfg-row">
+    <input class="cfg-inp" value="${escapeAttr(v)}" placeholder="Nombre del venue" onchange="cfgVenue(${i},this.value)">
+    <button class="mini-btn" title="Borrar" onclick="cfgDelVenue(${i})">&times;</button>
+  </div>`).join('') || '<div class="tr-empty">Sin venues. Agregá uno con "+ venue".</div>';
+}
+function cfgApply(){ saveSettings(); rebuildLookups(); renderAll(); }
+function cfgArea(i,k,val){ if(!SETTINGS.areas[i])return; SETTINGS.areas[i][k]=(k==='nombre'?val.trim():val); cfgApply(); }
+function cfgAddArea(){ SETTINGS.areas.push({nombre:'Nueva área',resp:'',color:'#8B5CF6'}); cfgApply(); renderConfig(); }
+function cfgDelArea(i){ if(!confirm('¿Borrar esta área?'))return; SETTINGS.areas.splice(i,1); cfgApply(); renderConfig(); }
+function cfgVenue(i,val){ SETTINGS.venues[i]=val.trim(); cfgApply(); }
+function cfgAddVenue(){ SETTINGS.venues.push('Nuevo venue'); cfgApply(); renderConfig(); }
+function cfgDelVenue(i){ if(!confirm('¿Borrar este venue?'))return; SETTINGS.venues.splice(i,1); cfgApply(); renderConfig(); }
 </script>
 </body>
 </html>
