@@ -221,7 +221,10 @@ input:checked+.theme-slider:before{transform:translateX(14px);background:#fff;}
     <div class="view active" id="view-tablero">
       <div class="page-header">
         <div><div class="page-title">Tablero semanal</div><div class="page-sub">Los "to do" de cada área para la semana</div></div>
-        <button class="btn btn-primary" onclick="openTaskModal()">+ Agregar tarea</button>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost" onclick="refreshData(this)">&#8635; Actualizar</button>
+          <button class="btn btn-primary" onclick="openTaskModal()">+ Agregar tarea</button>
+        </div>
       </div>
       <div class="week-nav">
         <button class="week-btn" onclick="weekMove(-1)">&larr;</button>
@@ -330,7 +333,7 @@ input:checked+.theme-slider:before{transform:translateX(14px);background:#fff;}
    Si queda vacío, funciona local (localStorage) en cada navegador.
    ══════════════════════════════════════════════════════════ */
 const CONFIG = {
-  SHEET_ID  : '1TlmygZX_Ow3p9tuSyswBkDYntk0nc6d2R7_LSlQVQUs',   // Google Sheet "Agenda Venues"
+  SHEET_ID  : '12hFiAY2yGbfopdA-I8p3_2I8jj8hY9jGV0gQ7n6D740',   // Google Sheet "Agenda Venues" (pestañas por área)
   SCRIPT_URL: ''    // URL del Apps Script publicado (POST)      — opcional
 };
 
@@ -468,29 +471,44 @@ function nav(name){
 }
 
 /* ══ CARGA DE DATOS ══
-   Si hay SHEET_ID lee de Google (pestaña "Agenda"); si no, usa local. ══ */
+   Si hay SHEET_ID lee de Google: una PESTAÑA POR ÁREA (con el nombre del área)
+   y las junta. Si una pestaña no existe todavía, la saltea. Si no hay ID, local. ══ */
 async function loadTasks(){
   if(CONFIG.SHEET_ID){
     setSync('loading');
-    try{
-      const rows=await fetchSheet('Agenda');
-      TASKS=rows.filter(r=>r.Tarea).map(r=>{
-        const area=(r['Área']||r.Area||'').trim();
-        return {
-          id:r.ID||('t'+Math.random().toString(36).slice(2)),
-          semana:normWeek(r.Semana),
-          area,
-          resp:r.Responsable||(AREAS[area]?AREAS[area].resp:''),
-          venue:r.Venue||'', tarea:r.Tarea, estado:r.Estado||'Nueva',
-          vto:r.Vencimiento||'', nota:r.Nota||'', updated:r.Actualizado||''
-        };
-      });
-      setSync('ok');
-    }catch(e){ console.error(e); setSync('error'); loadLocal(); }
+    const all=[]; let anyOk=false;
+    for(const areaTab of AREA_ORDER){
+      try{
+        const rows=await fetchSheet(areaTab);
+        anyOk=true;
+        rows.filter(r=>r.Tarea).forEach(function(r){
+          const area=((r['Área']||r.Area||areaTab)+'').trim()||areaTab;
+          all.push({
+            id:r.ID||('t'+Math.random().toString(36).slice(2)),
+            semana:normWeek(r.Semana),
+            area,
+            resp:r.Responsable||(AREAS[area]?AREAS[area].resp:''),
+            venue:r.Venue||'', tarea:r.Tarea, estado:r.Estado||'Nueva',
+            vto:r.Vencimiento||'', nota:r.Nota||'', updated:r.Actualizado||''
+          });
+        });
+      }catch(e){ /* pestaña inexistente o vacía: se saltea */ }
+    }
+    if(anyOk){ TASKS=all; setSync('ok'); }
+    else { setSync('error'); loadLocal(); }
   } else {
     loadLocal();
   }
   renderAll();
+}
+function reloadData(){ loadTasks(); }
+async function refreshData(btn){
+  let prev;
+  if(btn){ btn.disabled=true; prev=btn.innerHTML; btn.innerHTML='Actualizando...'; }
+  await loadTasks();
+  if(document.getElementById('view-areas').classList.contains('active')) renderAreas();
+  if(document.getElementById('view-reporte').classList.contains('active')) renderReport();
+  if(btn){ btn.disabled=false; btn.innerHTML=prev; }
 }
 function loadLocal(){
   const raw=safeGet('va-tasks-v2');
