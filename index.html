@@ -319,11 +319,11 @@ const CONFIG = {
    Cambiá esto por lo tuyo. La "key" (izquierda) es el usuario que se escribe
    al ingresar. Agregá o sacá los que quieras. role:'admin' ve todo y exporta.  */
 const USERS = {
-  'valen':  { pass:'cambiala',   nombre:'Valen',   role:'admin' },   // ← TU usuario (cambiá la contraseña)
-  'diego':  { pass:'diego2026',  nombre:'Diego',   role:'area'  },
-  'turco':  { pass:'turco2026',  nombre:'Turco',   role:'area'  },
-  'manuel': { pass:'manuel2026', nombre:'Manuel',  role:'area'  },
-  'hernan': { pass:'hernan2026', nombre:'Hernán',  role:'area'  }
+  'valen':  { pass:'dpvenues', nombre:'Valen',  role:'admin' },   // ← única admin
+  'diego':  { pass:'dpvenues', nombre:'Diego',  role:'area'  },
+  'turco':  { pass:'dpvenues', nombre:'Turco',  role:'area'  },
+  'manuel': { pass:'dpvenues', nombre:'Manuel', role:'area'  },
+  'hernan': { pass:'dpvenues', nombre:'Hernán', role:'area'  }
 };
 
 /* ── Áreas y responsables (según tu equipo) ── */
@@ -461,12 +461,11 @@ async function loadTasks(){
   renderAll();
 }
 function loadLocal(){
-  const raw=safeGet('va-tasks');
+  const raw=safeGet('va-tasks-v2');
   if(raw){ try{ TASKS=JSON.parse(raw); }catch(e){ TASKS=[]; } }
-  if(!TASKS.length) seedDemo();
   setSync(CONFIG.SHEET_ID?'error':'local');
 }
-function persist(){ safeSet('va-tasks',JSON.stringify(TASKS)); }
+function persist(){ safeSet('va-tasks-v2',JSON.stringify(TASKS)); }
 function setSync(s){
   const dot=document.getElementById('sync-dot'), lbl=document.getElementById('sync-label');
   const map={ok:['var(--green)','Sincronizado'],loading:['var(--yellow)','Sincronizando...'],
@@ -490,26 +489,6 @@ async function pushToSheet(task,action){
     await fetch(CONFIG.SCRIPT_URL,{ method:'POST', headers:{'Content-Type':'application/json'},
       mode:'no-cors', body:JSON.stringify({action:action||'save',...task}) });
   }catch(e){ console.error('push error',e); }
-}
-
-/* ══ DEMO (arranque con ejemplos de esta semana) ══ */
-function seedDemo(){
-  const w=weekKey(new Date());
-  const now=new Date().toLocaleDateString('es-AR');
-  const d=[
-    ['Comercial','Palermo','Cerrar propuesta de naming con sponsor','En proceso','Reunión agendada para el jueves'],
-    ['Comercial','Rosario','Enviar deck comercial actualizado','Nueva',''],
-    ['Legales','Palermo','Revisar contrato de concesión gastronómica','Avanzada','Falta firma de la otra parte'],
-    ['Legales','Córdoba','Presentar habilitación municipal','Trabada','Frenado por documentación faltante'],
-    ['Obra','Córdoba','Certificar avance de obra del mes','En proceso',''],
-    ['Obra','Palermo','Coordinar visita de inspección eléctrica','Nueva',''],
-    ['Administración','General','Consolidar gastos de junio de los 3 venues','En proceso',''],
-    ['Pagos','Rosario','Liberar pago a proveedor de estructura','Finalizada','Pagado el lunes'],
-  ];
-  TASKS=d.map(([area,venue,tarea,estado,nota],i)=>({
-    id:'seed'+i, semana:w, area, resp:AREAS[area].resp, venue, tarea, estado, nota, updated:now
-  }));
-  persist();
 }
 
 /* ══ RENDER GENERAL ══ */
