@@ -264,6 +264,7 @@ input:checked+.theme-slider:before{transform:translateX(14px);background:#fff;}
         <div><div class="page-title">Por área</div><div class="page-sub">Todas las tareas de un área, filtradas por semana o históricas</div></div>
       </div>
       <div class="week-nav" id="areas-filter"></div>
+      <div class="week-nav" id="venues-filter" style="margin-top:-6px"></div>
       <div class="card">
         <div class="card-header">Tareas <span id="areas-count" style="color:var(--muted);font-weight:400"></span></div>
         <div class="tbl-wrap">
@@ -369,6 +370,9 @@ const USERS = {
   'hernan': { pass:'dpvenues', nombre:'Hernán', role:'area'  }
 };
 
+/* Paleta de colores para venues (default y fallback) */
+const VENUE_PALETTE=['#A78BFA','#F472B6','#2DD4BF','#FBBF24','#60A5FA','#A3E635','#FB923C','#C084FC','#34D399','#F87171'];
+
 /* ── Áreas y venues (EDITABLES desde el panel Configuración) ── */
 const DEFAULT_SETTINGS = {
   areas:[
@@ -378,23 +382,45 @@ const DEFAULT_SETTINGS = {
     { nombre:'Legales',        resp:'Manuel', color:'#F59E0B' },
     { nombre:'Obra',           resp:'Hernán', color:'#60A5FA' }
   ],
-  venues:['Arena Rosario','Arena Córdoba','Music Hall - Palermo','General']
+  venues:[
+    { nombre:'Arena Rosario',        color:'#A78BFA' },
+    { nombre:'Arena Córdoba',        color:'#F472B6' },
+    { nombre:'Music Hall - Palermo', color:'#2DD4BF' },
+    { nombre:'General',              color:'#8B84A0' }
+  ]
 };
-let SETTINGS = loadSettings();
-let AREAS = {}, AREA_ORDER = [], VENUES = [];
+let SETTINGS = normalizeSettings(loadSettings());
+let AREAS = {}, AREA_ORDER = [], VENUES = [], VENUE_COLORS = {};
 function loadSettings(){
   const raw=safeGet('va-settings');
   if(raw){ try{ return JSON.parse(raw); }catch(e){} }
   return JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
 }
+/* Convierte venues viejos (texto) al nuevo formato {nombre,color} */
+function normalizeSettings(s){
+  if(!s || typeof s!=='object') return JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+  if(!Array.isArray(s.areas))  s.areas =JSON.parse(JSON.stringify(DEFAULT_SETTINGS.areas));
+  if(!Array.isArray(s.venues)) s.venues=JSON.parse(JSON.stringify(DEFAULT_SETTINGS.venues));
+  s.venues=s.venues.map((v,i)=> (typeof v==='string')
+    ? { nombre:v, color:VENUE_PALETTE[i%VENUE_PALETTE.length] }
+    : { nombre:(v.nombre||''), color:(v.color||VENUE_PALETTE[i%VENUE_PALETTE.length]) });
+  return s;
+}
 function saveSettings(){ safeSet('va-settings',JSON.stringify(SETTINGS)); }
 function rebuildLookups(){
   AREAS={}; AREA_ORDER=[];
   SETTINGS.areas.forEach(function(a){ AREAS[a.nombre]={resp:a.resp,color:a.color}; AREA_ORDER.push(a.nombre); });
-  VENUES=SETTINGS.venues.slice();
+  VENUES=SETTINGS.venues.map(v=>v.nombre);
+  VENUE_COLORS={}; SETTINGS.venues.forEach(v=>{ VENUE_COLORS[v.nombre]=v.color; });
 }
 rebuildLookups();
-function venueChip(v){ return v?`<span class="chip chip-v">${escapeHtml(v)}</span>`:''; }
+function venueColor(v){
+  if(!v||v==='Sin venue') return '#8B84A0';
+  if(VENUE_COLORS[v]) return VENUE_COLORS[v];
+  let h=0; for(let k=0;k<v.length;k++) h=(h*31+v.charCodeAt(k))>>>0;
+  return VENUE_PALETTE[h%VENUE_PALETTE.length];
+}
+function venueChip(v){ if(!v) return ''; const c=venueColor(v); return `<span class="chip" style="background:${c}22;color:${c}">${escapeHtml(v)}</span>`; }
 
 /* ── Estados y su color ── */
 const ESTADOS = ['Nueva','En proceso','Avanzada','Finalizada','Trabada'];
@@ -412,6 +438,7 @@ let TASKS = [];
 let curWeek = startOfWeek(new Date());   // tablero
 let repWeek = startOfWeek(new Date());   // reporte
 let areaFilter = 'Todas';
+let venueFilter = 'Todos';
 let areaWeekFilter = 'week';
 let editingId = null;
 let groupBy = 'area';   // 'area' | 'venue'
@@ -633,7 +660,7 @@ function renderBoard(){
       const list=sortList(t.filter(x=>(x.venue||'Sin venue')===v));
       return `<div class="area-block">
         <div class="area-block-head">
-          <div class="area-bar" style="background:var(--accent)"></div>
+          <div class="area-bar" style="background:${venueColor(v)}"></div>
           <div><div class="area-name">${escapeHtml(v)}</div><div class="area-resp">${list.length} tarea${list.length!==1?'s':''}</div></div>
           <div class="area-count">${list.length}</div>
           <button class="tr-addbtn" onclick="openTaskModal(null,null,'${escapeAttr(v)}')">+ tarea</button>
@@ -782,11 +809,22 @@ function saveTask(){
 function renderAreas(){
   const bar=document.getElementById('areas-filter');
   const chips=['Todas',...AREA_ORDER];
-  bar.innerHTML=chips.map(a=>`<button class="week-btn" style="${a===areaFilter?'border-color:var(--accent);color:var(--accent)':''}" onclick="setAreaFilter('${a}')">${a}</button>`).join('')
+  bar.innerHTML=chips.map(a=>`<button class="week-btn" style="${a===areaFilter?'border-color:var(--accent);color:var(--accent)':''}" onclick="setAreaFilter('${escapeAttr(a)}')">${a}</button>`).join('')
     +`<span style="margin-left:auto"></span>`
     +['week','all'].map(f=>`<button class="week-btn" style="${f===areaWeekFilter?'border-color:var(--accent);color:var(--accent)':''}" onclick="setAreaWeek('${f}')">${f==='week'?'Esta semana':'Histórico'}</button>`).join('');
+  // fila de filtro por venue (cada uno con su color)
+  const vbar=document.getElementById('venues-filter');
+  const vchips=['Todos',...VENUES];
+  vbar.innerHTML=`<span class="bt-label" style="align-self:center">Venue:</span>`+vchips.map(v=>{
+    const sel=(v===venueFilter);
+    if(v==='Todos') return `<button class="week-btn" style="${sel?'border-color:var(--accent);color:var(--accent)':''}" onclick="setVenueFilter('Todos')">Todos</button>`;
+    const c=venueColor(v);
+    return `<button class="week-btn" style="border-color:${sel?c:'var(--border)'};color:${sel?c:'var(--secondary)'}" onclick="setVenueFilter('${escapeAttr(v)}')"><span class="est-dot" style="background:${c}"></span>${escapeHtml(v)}</button>`;
+  }).join('');
+
   let list=[...TASKS];
   if(areaFilter!=='Todas') list=list.filter(t=>t.area===areaFilter);
+  if(venueFilter!=='Todos') list=list.filter(t=>(t.venue||'')===venueFilter);
   if(areaWeekFilter==='week') list=list.filter(t=>t.semana===weekKey(new Date()));
   list.sort((a,b)=>(b.semana||'').localeCompare(a.semana||''));
   document.getElementById('areas-count').textContent=`(${list.length})`;
@@ -802,6 +840,7 @@ function renderAreas(){
 }
 function setAreaFilter(a){ areaFilter=a; renderAreas(); }
 function setAreaWeek(f){ areaWeekFilter=f; renderAreas(); }
+function setVenueFilter(v){ venueFilter=v; renderAreas(); }
 
 /* ══ REPORTE ══ */
 function repWeekMove(n){ repWeek=addDays(repWeek,n*7); renderReport(); }
@@ -908,7 +947,8 @@ function renderConfig(){
   </div>`).join('') || '<div class="tr-empty">Sin áreas. Agregá una con "+ área".</div>';
   const vc=document.getElementById('cfg-venues');
   vc.innerHTML=SETTINGS.venues.map((v,i)=>`<div class="cfg-row">
-    <input class="cfg-inp" value="${escapeAttr(v)}" placeholder="Nombre del venue" onchange="cfgVenue(${i},this.value)">
+    <input class="cfg-inp" value="${escapeAttr(v.nombre)}" placeholder="Nombre del venue" onchange="cfgVenue(${i},'nombre',this.value)">
+    <input type="color" class="cfg-color" value="${v.color||'#8B5CF6'}" onchange="cfgVenue(${i},'color',this.value)" title="Color del venue">
     <button class="mini-btn" title="Borrar" onclick="cfgDelVenue(${i})">&times;</button>
   </div>`).join('') || '<div class="tr-empty">Sin venues. Agregá uno con "+ venue".</div>';
 }
@@ -916,8 +956,8 @@ function cfgApply(){ saveSettings(); rebuildLookups(); renderAll(); }
 function cfgArea(i,k,val){ if(!SETTINGS.areas[i])return; SETTINGS.areas[i][k]=(k==='nombre'?val.trim():val); cfgApply(); }
 function cfgAddArea(){ SETTINGS.areas.push({nombre:'Nueva área',resp:'',color:'#8B5CF6'}); cfgApply(); renderConfig(); }
 function cfgDelArea(i){ if(!confirm('¿Borrar esta área?'))return; SETTINGS.areas.splice(i,1); cfgApply(); renderConfig(); }
-function cfgVenue(i,val){ SETTINGS.venues[i]=val.trim(); cfgApply(); }
-function cfgAddVenue(){ SETTINGS.venues.push('Nuevo venue'); cfgApply(); renderConfig(); }
+function cfgVenue(i,k,val){ if(!SETTINGS.venues[i])return; SETTINGS.venues[i][k]=(k==='nombre'?val.trim():val); cfgApply(); }
+function cfgAddVenue(){ SETTINGS.venues.push({nombre:'Nuevo venue', color:VENUE_PALETTE[SETTINGS.venues.length%VENUE_PALETTE.length]}); cfgApply(); renderConfig(); }
 function cfgDelVenue(i){ if(!confirm('¿Borrar este venue?'))return; SETTINGS.venues.splice(i,1); cfgApply(); renderConfig(); }
 </script>
 </body>
