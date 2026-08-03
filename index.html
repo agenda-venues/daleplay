@@ -101,6 +101,9 @@ input:checked+.theme-slider:before{transform:translateX(14px);background:#fff;}
 .cfg-inp{flex:1;min-width:0;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:8px 11px;font-size:12px;font-family:'Manrope',sans-serif;outline:none;}
 .cfg-inp:focus{border-color:var(--accent);}
 .cfg-color{width:38px;height:34px;padding:2px;border:1px solid var(--border);border-radius:7px;background:var(--surface2);cursor:pointer;flex-shrink:0;}
+.nov-banner{display:flex;align-items:center;gap:12px;justify-content:space-between;background:rgba(139,92,246,0.12);border:1px solid var(--accent);border-radius:10px;padding:10px 15px;margin-bottom:16px;font-size:12.5px;color:var(--text);}
+.flag-new{background:rgba(34,197,94,0.18);color:#86EFAC;}
+.flag-chg{background:rgba(139,92,246,0.2);color:var(--pulse);}
 .area-col{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;}
 .area-head{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px;}
 .area-bar{width:4px;height:26px;border-radius:3px;flex-shrink:0;}
@@ -226,6 +229,7 @@ input:checked+.theme-slider:before{transform:translateX(14px);background:#fff;}
           <button class="btn btn-primary" onclick="openTaskModal()">+ Agregar tarea</button>
         </div>
       </div>
+      <div id="novedades-banner" class="nov-banner" style="display:none"></div>
       <div class="week-nav">
         <button class="week-btn" onclick="weekMove(-1)">&larr;</button>
         <div class="week-period" id="week-period"></div>
@@ -260,7 +264,7 @@ input:checked+.theme-slider:before{transform:translateX(14px);background:#fff;}
         <div><div class="page-title">Reporte para dirección</div><div class="page-sub" id="reporte-sub"></div></div>
         <div style="display:flex;gap:8px">
           <button class="btn btn-ghost" onclick="exportCSV()">CSV</button>
-          <button class="btn btn-primary" onclick="exportExcel()">Descargar Excel</button>
+          <button class="btn btn-primary" onclick="exportExcel()">&#8681; Descargar reporte (Excel)</button>
         </div>
       </div>
       <div class="week-nav">
@@ -499,7 +503,33 @@ async function loadTasks(){
   } else {
     loadLocal();
   }
+  computeFlags();
   renderAll();
+}
+/* ── Detección de novedades: compara con la última vez que marcaste "visto" ── */
+function taskKey(t){ return (t.area||'')+'|'+(t.semana||'')+'|'+((t.tarea||'').trim().toLowerCase()); }
+function loadSnapshot(){ const r=safeGet('va-snapshot'); if(r){ try{ return JSON.parse(r); }catch(e){} } return null; }
+function saveSnapshot(){ const s={}; TASKS.forEach(t=>{ s[taskKey(t)]={estado:t.estado,nota:t.nota||'',vto:t.vto||''}; }); safeSet('va-snapshot',JSON.stringify(s)); }
+function computeFlags(){
+  const snap=loadSnapshot();
+  if(!snap){ saveSnapshot(); TASKS.forEach(t=>t._flag=null); return; }
+  TASKS.forEach(t=>{
+    const p=snap[taskKey(t)];
+    if(!p){ t._flag='nuevo'; }
+    else if(p.estado!==t.estado){ t._flag='estado'; }
+    else if((p.nota||'')!==(t.nota||'') || (p.vto||'')!==(t.vto||'')){ t._flag='cambio'; }
+    else { t._flag=null; }
+  });
+}
+function novedadesCount(){ return TASKS.filter(t=>t._flag).length; }
+function marcarVisto(){ saveSnapshot(); TASKS.forEach(t=>t._flag=null); renderAll(); }
+function renderNovedades(){
+  const el=document.getElementById('novedades-banner'); if(!el) return;
+  const n=novedadesCount();
+  if(n>0){
+    el.style.display='flex';
+    el.innerHTML=`<span>&#128276; ${n} novedad${n>1?'es':''} en la agenda desde tu última visita (marcadas abajo)</span><button class="mini-btn" onclick="marcarVisto()">Marcar como visto</button>`;
+  } else { el.style.display='none'; }
 }
 function reloadData(){ loadTasks(); }
 async function refreshData(btn){
@@ -542,10 +572,11 @@ async function pushToSheet(task,action){
 }
 
 /* ══ RENDER GENERAL ══ */
-function renderAll(){ renderWeekHeader(); renderKPIs(); renderBoard(); }
+function renderAll(){ renderWeekHeader(); renderNovedades(); renderKPIs(); renderBoard(); }
 
 function renderWeekHeader(){
-  document.getElementById('week-period').textContent=fmtRange(curWeek);
+  const cur = weekKey(curWeek)===weekKey(new Date());
+  document.getElementById('week-period').textContent=fmtRange(curWeek)+(cur?' · actual':'');
   document.getElementById('week-tag').textContent=weekKey(curWeek);
 }
 function weekTasks(wk){ const k=weekKey(wk); return TASKS.filter(t=>t.semana===k); }
@@ -586,12 +617,16 @@ function renderBoard(){
 function taskRow(t){
   const opts=ESTADOS.map(e=>`<option ${e===t.estado?'selected':''}>${e}</option>`).join('');
   const note=t.nota?`<div class="tr-note"><b>Status:</b> ${escapeHtml(t.nota)}${t.updated?` · ${t.updated}`:''}</div>`:'';
+  const flag = t._flag==='nuevo' ? `<span class="badge flag-new">Nueva</span>`
+    : t._flag==='estado' ? `<span class="badge flag-chg">Cambió estado</span>`
+    : t._flag==='cambio' ? `<span class="badge flag-chg">Actualizada</span>` : '';
   return `<div class="task-row">
     <span class="est-dot" style="background:${ESTADO_COLOR[t.estado]}" title="${t.estado}"></span>
     <div class="tr-main">
       <div class="tr-title">${escapeHtml(t.tarea)}</div>
       ${note}
     </div>
+    ${flag}
     ${venueChip(t.venue)}
     ${dueBadge(t.vto)}
     <div class="tr-controls">
@@ -750,26 +785,57 @@ function renderReport(){
 }
 
 /* ══ EXPORT ══ */
+function fmtWeekLabel(d){
+  const a=startOfWeek(d), b=addDays(a,6), o={day:'2-digit',month:'2-digit'};
+  return a.toLocaleDateString('es-AR',o)+' al '+b.toLocaleDateString('es-AR',o);
+}
 function reportRows(){
-  const t=TASKS.filter(x=>x.semana===weekKey(repWeek))
-    .sort((a,b)=>AREA_ORDER.indexOf(a.area)-AREA_ORDER.indexOf(b.area));
-  return t.map(x=>({Semana:x.semana,'Área':x.area,Responsable:x.resp,Venue:x.venue,Tarea:x.tarea,Vencimiento:x.vto||'',Estado:x.estado,Nota:x.nota||'',Actualizado:x.updated||''}));
+  return TASKS.filter(x=>x.semana===weekKey(repWeek))
+    .sort((a,b)=>AREA_ORDER.indexOf(a.area)-AREA_ORDER.indexOf(b.area))
+    .map(x=>({Semana:x.semana,'Área':x.area,Responsable:x.resp,Venue:x.venue,Tarea:x.tarea,Vencimiento:x.vto||'',Estado:x.estado,Nota:x.nota||'',Actualizado:x.updated||''}));
 }
 function exportExcel(){
   if(typeof XLSX==='undefined'){ exportCSV(); return; }
   const rows=reportRows();
+  const semana=fmtWeekLabel(repWeek);
   const wb=XLSX.utils.book_new();
-  const ws=XLSX.utils.json_to_sheet(rows,{header:['Semana','Área','Responsable','Venue','Tarea','Vencimiento','Estado','Nota','Actualizado']});
-  ws['!cols']=[{wch:12},{wch:15},{wch:12},{wch:16},{wch:48},{wch:12},{wch:12},{wch:40},{wch:12}];
-  XLSX.utils.book_append_sheet(wb,ws,'Agenda');
-  const res=AREA_ORDER.map(a=>{
+
+  /* ── Hoja 1: RESUMEN (lo primero que ve Martín) ── */
+  const resAOA=[
+    ['REPORTE DE VENUES'],
+    ['Semana del '+semana],
+    ['Generado el '+new Date().toLocaleDateString('es-AR')],
+    [],
+    ['Área','Responsable','Total','Nuevas','En proceso','Avanzada','Finalizada','Trabada','% avance']
+  ];
+  AREA_ORDER.forEach(a=>{
     const l=rows.filter(r=>r['Área']===a);
     const c=e=>l.filter(r=>r.Estado===e).length;
-    return {'Área':a,Responsable:AREAS[a]?AREAS[a].resp:'',Total:l.length,Nuevas:c('Nueva'),'En proceso':c('En proceso'),Avanzadas:c('Avanzada'),Finalizadas:c('Finalizada'),Trabadas:c('Trabada')};
+    const pct=l.length?Math.round(c('Finalizada')/l.length*100)+'%':'-';
+    resAOA.push([a, (AREAS[a]?AREAS[a].resp:''), l.length, c('Nueva'), c('En proceso'), c('Avanzada'), c('Finalizada'), c('Trabada'), pct]);
   });
-  const ws2=XLSX.utils.json_to_sheet(res);
-  XLSX.utils.book_append_sheet(wb,ws2,'Resumen');
-  XLSX.writeFile(wb,`Reporte_Venues_${weekKey(repWeek)}.xlsx`);
+  resAOA.push([]);
+  resAOA.push(['TOTAL', '', rows.length, rows.filter(r=>r.Estado==='Nueva').length, rows.filter(r=>r.Estado==='En proceso').length, rows.filter(r=>r.Estado==='Avanzada').length, rows.filter(r=>r.Estado==='Finalizada').length, rows.filter(r=>r.Estado==='Trabada').length, '']);
+  const ws1=XLSX.utils.aoa_to_sheet(resAOA);
+  ws1['!cols']=[{wch:16},{wch:13},{wch:7},{wch:8},{wch:11},{wch:10},{wch:11},{wch:9},{wch:9}];
+  ws1['!merges']=[{s:{r:0,c:0},e:{r:0,c:8}},{s:{r:1,c:0},e:{r:1,c:8}},{s:{r:2,c:0},e:{r:2,c:8}}];
+  XLSX.utils.book_append_sheet(wb,ws1,'Resumen');
+
+  /* ── Hoja 2: DETALLE (todas las tareas, ordenadas por área) ── */
+  const detHead=['Área','Responsable','Venue','Tarea','Vence','Estado','Nota / status','Actualizado'];
+  const detAOA=[
+    ['DETALLE DE TAREAS · Semana del '+semana],
+    [],
+    detHead
+  ];
+  rows.forEach(r=>detAOA.push([r['Área'],r.Responsable,r.Venue,r.Tarea,r.Vencimiento,r.Estado,r.Nota,r.Actualizado]));
+  if(!rows.length) detAOA.push(['(Sin tareas cargadas en esta semana)']);
+  const ws2=XLSX.utils.aoa_to_sheet(detAOA);
+  ws2['!cols']=[{wch:16},{wch:13},{wch:20},{wch:50},{wch:11},{wch:12},{wch:38},{wch:12}];
+  ws2['!merges']=[{s:{r:0,c:0},e:{r:0,c:7}}];
+  XLSX.utils.book_append_sheet(wb,ws2,'Detalle');
+
+  XLSX.writeFile(wb,`Reporte Venues - semana ${semana.replace(/\//g,'-')}.xlsx`);
 }
 function exportCSV(){
   const rows=reportRows();
@@ -777,7 +843,7 @@ function exportCSV(){
   const csv=[heads.join(',')].concat(rows.map(r=>heads.map(h=>`"${String(r[h]||'').replace(/"/g,'""')}"`).join(','))).join('\n');
   const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
-  a.download=`Reporte_Venues_${weekKey(repWeek)}.csv`; a.click();
+  a.download=`Reporte Venues - semana ${fmtWeekLabel(repWeek).replace(/\//g,'-')}.csv`; a.click();
 }
 
 /* ══ CONFIGURACIÓN (editar áreas / personas / venues) ══ */
