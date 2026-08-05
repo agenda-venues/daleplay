@@ -15,9 +15,9 @@
   --mono:'DM Mono',monospace;--display:'Space Grotesk',sans-serif;color-scheme:dark;
 }
 [data-theme="light"]{
-  --bg:#F5F3FB;--surface:#FFFFFF;--surface2:#F0EDF9;--border:#E4DFF2;
-  --accent:#7C3AED;--pulse:#6D28D9;--green:#16A34A;--yellow:#D97706;--red:#DC2626;--blue:#2563EB;
-  --text:#1C1826;--muted:#6B6480;--secondary:#4B4560;color-scheme:light;
+  --bg:#F0E9D8;--surface:#FBF6EA;--surface2:#EFE7D3;--border:#E0D5BE;
+  --accent:#7C3AED;--pulse:#6D28D9;--green:#16A34A;--yellow:#B45309;--red:#DC2626;--blue:#2563EB;
+  --text:#2A2416;--muted:#7C6F58;--secondary:#544B39;color-scheme:light;
 }
 body{font-family:'Manrope',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:13px;overflow-x:hidden;width:100%;}
 html{overflow-x:hidden;width:100%;}
@@ -107,6 +107,21 @@ input:checked+.theme-slider:before{transform:translateX(14px);background:#fff;}
 .bt-sel{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:6px 10px;font-size:12px;font-family:'Manrope',sans-serif;outline:none;cursor:pointer;}
 .bt-sel:focus{border-color:var(--accent);}
 .bt-sel:not(:last-child){margin-right:6px;}
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.chart-card{margin-bottom:0;}
+.chart-body{padding:18px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;justify-content:center;}
+.chart-legend{display:flex;flex-direction:column;gap:8px;min-width:150px;}
+.leg-row{display:flex;align-items:center;gap:9px;font-size:12.5px;}
+.leg-dot{width:11px;height:11px;border-radius:3px;flex-shrink:0;}
+.leg-name{flex:1;color:var(--text);}
+.leg-val{color:var(--muted);font-family:var(--mono);font-size:11px;}
+.chart-empty{padding:30px;text-align:center;color:var(--muted);font-size:12px;width:100%;}
+.av-row{display:flex;align-items:center;gap:12px;}
+.av-name{width:120px;font-size:12.5px;display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.av-track{flex:1;height:10px;background:var(--surface2);border-radius:5px;overflow:hidden;}
+.av-fill{height:100%;border-radius:5px;}
+.av-pct{width:70px;text-align:right;font-size:11px;color:var(--muted);font-family:var(--mono);flex-shrink:0;}
+@media(max-width:900px){ .charts-grid{grid-template-columns:1fr;} }
 .flag-new{background:rgba(34,197,94,0.18);color:#86EFAC;}
 .flag-chg{background:rgba(139,92,246,0.2);color:var(--pulse);}
 .area-col{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;}
@@ -210,6 +225,7 @@ input:checked+.theme-slider:before{transform:translateX(14px);background:#fff;}
     <button class="nav-item active" onclick="nav('tablero')"><span class="icon">&#9776;</span>Tablero semanal</button>
     <button class="nav-item" onclick="nav('areas')"><span class="icon">&#9635;</span>Por área</button>
     <button class="nav-item" onclick="nav('reporte')"><span class="icon">&#9636;</span>Reporte / Export</button>
+    <button class="nav-item" onclick="nav('graficos')"><span class="icon">&#9685;</span>Gráficos</button>
     <button class="nav-item" id="nav-config" onclick="nav('config')"><span class="icon">&#9881;</span>Configuración</button>
     <div class="sidebar-bottom">
       <div class="user-line" id="user-line" style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--text);margin-bottom:10px;padding:6px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px"></div>
@@ -231,7 +247,7 @@ input:checked+.theme-slider:before{transform:translateX(14px);background:#fff;}
         <div><div class="page-title">Tablero semanal</div><div class="page-sub">Los "to do" de cada área para la semana</div></div>
         <div style="display:flex;gap:8px">
           <button class="btn btn-ghost" onclick="refreshData(this)">&#8635; Actualizar</button>
-          <button class="btn btn-primary" onclick="openTaskModal()">+ Agregar tarea</button>
+          <button class="btn btn-primary" id="btn-add-top" onclick="openTaskModal()">+ Agregar tarea</button>
         </div>
       </div>
       <div id="novedades-banner" class="nov-banner" style="display:none"></div>
@@ -303,6 +319,33 @@ input:checked+.theme-slider:before{transform:translateX(14px);background:#fff;}
       </div>
     </div>
 
+    <!-- ══ GRÁFICOS ══ -->
+    <div class="view" id="view-graficos">
+      <div class="page-header">
+        <div><div class="page-title">Gráficos</div><div class="page-sub">Resumen visual de las tareas de la semana</div></div>
+      </div>
+      <div class="week-nav">
+        <button class="week-btn" onclick="gWeekMove(-1)">&larr;</button>
+        <div class="week-period" id="g-period"></div>
+        <button class="week-btn" onclick="gWeekMove(1)">&rarr;</button>
+        <button class="week-btn" onclick="gWeekToday()">Esta semana</button>
+      </div>
+      <div class="charts-grid">
+        <div class="card chart-card">
+          <div class="card-header">Tareas por área</div>
+          <div class="chart-body" id="chart-area"></div>
+        </div>
+        <div class="card chart-card">
+          <div class="card-header">Tareas por estado</div>
+          <div class="chart-body" id="chart-estado"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">Avance por área (% finalizado)</div>
+        <div id="chart-avance" style="padding:16px 18px;display:flex;flex-direction:column;gap:14px"></div>
+      </div>
+    </div>
+
     <!-- ══ CONFIGURACIÓN ══ -->
     <div class="view" id="view-config">
       <div class="page-header">
@@ -349,6 +392,26 @@ input:checked+.theme-slider:before{transform:translateX(14px);background:#fff;}
   </div>
 </div>
 
+<!-- ══ MODAL COMENTARIO ══ -->
+<div class="modal-overlay" id="comment-modal">
+  <div class="modal" style="max-width:430px">
+    <div class="modal-head">
+      <div class="modal-title">Comentario</div>
+      <button class="modal-x" onclick="closeCommentModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div id="cm-task" style="font-size:13px;font-weight:600;color:var(--text)"></div>
+      <div id="cm-prev" style="font-size:11px;color:var(--muted);white-space:pre-wrap;border-left:2px solid var(--border);padding-left:10px"></div>
+      <div class="fld"><label>Tu comentario</label><textarea id="cm-text" placeholder="Escribí tu comentario o aclaración..."></textarea></div>
+      <div id="cm-msg" style="font-size:11px;color:var(--muted)"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeCommentModal()">Cancelar</button>
+      <button class="btn btn-primary" id="cm-send" onclick="submitComment()">Enviar</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ══════════════════════════════════════════════════════════
    CONFIG  —  para dejarlo compartido/en la nube, completá esto.
@@ -356,18 +419,19 @@ input:checked+.theme-slider:before{transform:translateX(14px);background:#fff;}
    ══════════════════════════════════════════════════════════ */
 const CONFIG = {
   SHEET_ID  : '12hFiAY2yGbfopdA-I8p3_2I8jj8hY9jGV0gQ7n6D740',   // Google Sheet "Agenda Venues" (pestañas por área)
-  SCRIPT_URL: ''    // URL del Apps Script publicado (POST)      — opcional
+  SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxR3RTLeKnafrHQeLIB0fKamfpmcuZG6wpOhkVS3_YwUS9TSPTb7f_ZAcLxiiQZa09q0Q/exec'    // Apps Script (guarda comentarios)
 };
 
 /* ══ USUARIOS Y CONTRASEÑAS ══
    Cambiá esto por lo tuyo. La "key" (izquierda) es el usuario que se escribe
    al ingresar. Agregá o sacá los que quieras. role:'admin' ve todo y exporta.  */
 const USERS = {
-  'valen':  { pass:'dpvenues', nombre:'Valen',  role:'admin' },   // ← única admin
-  'diego':  { pass:'dpvenues', nombre:'Diego',  role:'area'  },
-  'turco':  { pass:'dpvenues', nombre:'Turco',  role:'area'  },
-  'manuel': { pass:'dpvenues', nombre:'Manuel', role:'area'  },
-  'hernan': { pass:'dpvenues', nombre:'Hernán', role:'area'  }
+  'valen':  { pass:'dpvenues', nombre:'Valen',  role:'admin' },   // única que edita
+  'martin': { pass:'dpvenues', nombre:'Martín', role:'view'  },   // solo visualiza
+  'diego':  { pass:'dpvenues', nombre:'Diego',  role:'view'  },
+  'turco':  { pass:'dpvenues', nombre:'Turco',  role:'view'  },
+  'manuel': { pass:'dpvenues', nombre:'Manuel', role:'view'  },
+  'hernan': { pass:'dpvenues', nombre:'Hernán', role:'view'  }
 };
 
 /* Paleta de colores para venues (default y fallback) */
@@ -443,6 +507,7 @@ let areaWeekFilter = 'week';
 let editingId = null;
 let groupBy = 'area';   // 'area' | 'venue'
 let sortBy = 'none';    // 'none' | 'vto'
+let gWeek = startOfWeek(new Date());   // gráficos
 
 /* ══ FECHAS ══ */
 function startOfWeek(d){ const x=new Date(d); const day=(x.getDay()+6)%7; x.setDate(x.getDate()-day); x.setHours(0,0,0,0); return x; }
@@ -490,7 +555,10 @@ function doLogin(){
     CURRENT_USER={key:u,nombre:acc.nombre||u,role:acc.role||'area'};
     document.getElementById('login-overlay').style.display='none';
     document.getElementById('app').style.display='flex';
-    if(CURRENT_USER.role!=='admin'){ const nc=document.getElementById('nav-config'); if(nc) nc.style.display='none'; }
+    if(CURRENT_USER.role!=='admin'){
+      const nc=document.getElementById('nav-config'); if(nc) nc.style.display='none';
+      const ba=document.getElementById('btn-add-top'); if(ba) ba.style.display='none';
+    }
     renderUserLine();
     loadTasks();
   } else {
@@ -499,6 +567,7 @@ function doLogin(){
   }
 }
 function logout(){ location.reload(); }
+function canEdit(){ return CURRENT_USER && CURRENT_USER.role==='admin'; }
 function renderUserLine(){
   const el=document.getElementById('user-line');
   if(!el||!CURRENT_USER) return;
@@ -512,11 +581,12 @@ function nav(name){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
   document.getElementById('view-'+name).classList.add('active');
-  const idx={tablero:0,areas:1,reporte:2,config:3}[name];
+  const idx={tablero:0,areas:1,reporte:2,graficos:3,config:4}[name];
   document.querySelectorAll('.nav-item')[idx].classList.add('active');
   closeSidebar();
   if(name==='areas') renderAreas();
   if(name==='reporte') renderReport();
+  if(name==='graficos') renderGraficos();
   if(name==='config') renderConfig();
 }
 
@@ -663,7 +733,7 @@ function renderBoard(){
           <div class="area-bar" style="background:${venueColor(v)}"></div>
           <div><div class="area-name">${escapeHtml(v)}</div><div class="area-resp">${list.length} tarea${list.length!==1?'s':''}</div></div>
           <div class="area-count">${list.length}</div>
-          <button class="tr-addbtn" onclick="openTaskModal(null,null,'${escapeAttr(v)}')">+ tarea</button>
+          ${canEdit()?`<button class="tr-addbtn" onclick="openTaskModal(null,null,'${escapeAttr(v)}')">+ tarea</button>`:''}
         </div>
         ${list.map(x=>taskRow(x,'venue')).join('')}
       </div>`;
@@ -677,7 +747,7 @@ function renderBoard(){
           <div class="area-bar" style="background:${AREAS[area]?AREAS[area].color:'var(--muted)'}"></div>
           <div><div class="area-name">${area}</div><div class="area-resp">${AREAS[area]?AREAS[area].resp:''}</div></div>
           <div class="area-count">${list.length}</div>
-          <button class="tr-addbtn" onclick="openTaskModal('${escapeAttr(area)}')">+ tarea</button>
+          ${canEdit()?`<button class="tr-addbtn" onclick="openTaskModal('${escapeAttr(area)}')">+ tarea</button>`:''}
         </div>
         ${rows}
       </div>`;
@@ -695,6 +765,15 @@ function taskRow(t, mode){
   let ctxChip;
   if(mode==='venue'){ const ac=(AREAS[t.area]&&AREAS[t.area].color)||'#8B84A0'; ctxChip=`<span class="chip" style="background:${ac}22;color:${ac}">${escapeHtml(t.area)}</span>`; }
   else { ctxChip=venueChip(t.venue); }
+  const cmt = `<button class="mini-btn" title="Comentar" onclick="openCommentModal('${t.id}')">&#128172;</button>`;
+  const controls = canEdit()
+    ? `<div class="tr-controls">
+        <select class="estado-sel" onchange="quickEstado('${t.id}',this.value)">${opts}</select>
+        ${cmt}
+        <button class="mini-btn" onclick="openTaskModal(null,'${t.id}')">Editar</button>
+        <button class="mini-btn" title="Eliminar" onclick="delTask('${t.id}')">&times;</button>
+      </div>`
+    : `<div class="tr-controls">${estadoBadge(t.estado)}${cmt}</div>`;
   return `<div class="task-row">
     <span class="est-dot" style="background:${ESTADO_COLOR[t.estado]}" title="${t.estado}"></span>
     <div class="tr-main">
@@ -704,11 +783,7 @@ function taskRow(t, mode){
     ${flag}
     ${ctxChip}
     ${dueBadge(t.vto)}
-    <div class="tr-controls">
-      <select class="estado-sel" onchange="quickEstado('${t.id}',this.value)">${opts}</select>
-      <button class="mini-btn" onclick="openTaskModal(null,'${t.id}')">Editar</button>
-      <button class="mini-btn" title="Eliminar" onclick="delTask('${t.id}')">&times;</button>
-    </div>
+    ${controls}
   </div>`;
 }
 function escapeHtml(s){ return String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
@@ -835,7 +910,7 @@ function renderAreas(){
     <td>${t.resp}</td><td>${venueChip(t.venue)}</td>
     <td>${escapeHtml(t.tarea)}${t.nota?`<div style="font-size:10px;color:var(--muted);margin-top:2px">${escapeHtml(t.nota)}</div>`:''}</td>
     <td>${estadoBadge(t.estado)}</td>
-    <td><button class="mini-btn" onclick="openTaskModal(null,'${t.id}')">Editar</button></td>
+    <td>${canEdit()?`<button class="mini-btn" onclick="openTaskModal(null,'${t.id}')">Editar</button>`:''}</td>
   </tr>`).join('') : `<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:26px">Sin tareas</td></tr>`;
 }
 function setAreaFilter(a){ areaFilter=a; renderAreas(); }
@@ -959,6 +1034,94 @@ function cfgDelArea(i){ if(!confirm('¿Borrar esta área?'))return; SETTINGS.are
 function cfgVenue(i,k,val){ if(!SETTINGS.venues[i])return; SETTINGS.venues[i][k]=(k==='nombre'?val.trim():val); cfgApply(); }
 function cfgAddVenue(){ SETTINGS.venues.push({nombre:'Nuevo venue', color:VENUE_PALETTE[SETTINGS.venues.length%VENUE_PALETTE.length]}); cfgApply(); renderConfig(); }
 function cfgDelVenue(i){ if(!confirm('¿Borrar este venue?'))return; SETTINGS.venues.splice(i,1); cfgApply(); renderConfig(); }
+
+/* ══ GRÁFICOS ══ */
+function gWeekMove(n){ gWeek=addDays(gWeek,n*7); renderGraficos(); }
+function gWeekToday(){ gWeek=startOfWeek(new Date()); renderGraficos(); }
+function donutSVG(data,total){
+  const size=190, sw=30, r=(size-sw)/2, cx=size/2, cy=size/2, C=2*Math.PI*r;
+  let off=0;
+  const segs=data.map(d=>{
+    const len=(d.value/(total||1))*C;
+    const s=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${d.color}" stroke-width="${sw}" stroke-dasharray="${len.toFixed(2)} ${(C-len).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" transform="rotate(-90 ${cx} ${cy})"/>`;
+    off+=len; return s;
+  }).join('');
+  return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" style="flex-shrink:0">
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--surface2)" stroke-width="${sw}"/>
+    ${segs}
+    <text x="${cx}" y="${cy-2}" text-anchor="middle" font-family="var(--display)" font-size="34" font-weight="700" fill="var(--text)">${total}</text>
+    <text x="${cx}" y="${cy+18}" text-anchor="middle" font-size="11" fill="var(--muted)">tareas</text>
+  </svg>`;
+}
+function legend(data,total){
+  return `<div class="chart-legend">`+data.map(d=>{
+    const pct=total?Math.round(d.value/total*100):0;
+    return `<div class="leg-row"><span class="leg-dot" style="background:${d.color}"></span><span class="leg-name">${escapeHtml(d.label)}</span><span class="leg-val">${d.value} · ${pct}%</span></div>`;
+  }).join('')+`</div>`;
+}
+function renderGraficos(){
+  document.getElementById('g-period').textContent=fmtRange(gWeek)+(weekKey(gWeek)===weekKey(new Date())?' · actual':'');
+  const t=TASKS.filter(x=>x.semana===weekKey(gWeek));
+  // por área
+  const areaData=AREA_ORDER.map(a=>({label:a,value:t.filter(x=>x.area===a).length,color:(AREAS[a]&&AREAS[a].color)||'#8B84A0'})).filter(d=>d.value>0);
+  const ce=document.getElementById('chart-area');
+  ce.innerHTML = areaData.length ? donutSVG(areaData,t.length)+legend(areaData,t.length)
+    : `<div class="chart-empty">Sin tareas esta semana</div>`;
+  // por estado
+  const estColorHex={'Nueva':'#60A5FA','En proceso':'#F59E0B','Avanzada':'#A78BFA','Finalizada':'#22C55E','Trabada':'#EF4444'};
+  const estData=ESTADOS.map(e=>({label:e,value:t.filter(x=>x.estado===e).length,color:estColorHex[e]})).filter(d=>d.value>0);
+  const cs=document.getElementById('chart-estado');
+  cs.innerHTML = estData.length ? donutSVG(estData,t.length)+legend(estData,t.length)
+    : `<div class="chart-empty">Sin tareas esta semana</div>`;
+  // avance por área
+  const av=document.getElementById('chart-avance');
+  av.innerHTML = AREA_ORDER.map(a=>{
+    const l=t.filter(x=>x.area===a);
+    const fin=l.filter(x=>x.estado==='Finalizada').length;
+    const pct=l.length?Math.round(fin/l.length*100):0;
+    const col=(AREAS[a]&&AREAS[a].color)||'#8B84A0';
+    return `<div class="av-row">
+      <div class="av-name"><span class="est-dot" style="background:${col}"></span>${a}</div>
+      <div class="av-track"><div class="av-fill" style="width:${pct}%;background:${col}"></div></div>
+      <div class="av-pct">${pct}% (${l.length})</div>
+    </div>`;
+  }).join('');
+}
+
+/* ══ COMENTARIOS (se escriben en la planilla via Apps Script) ══ */
+let commentId=null;
+function openCommentModal(id){
+  const t=TASKS.find(x=>x.id===id); if(!t) return;
+  commentId=id;
+  document.getElementById('cm-task').textContent=t.area+' — '+t.tarea;
+  document.getElementById('cm-prev').textContent=t.nota?('Notas actuales:\n'+t.nota):'(Sin notas todavía)';
+  document.getElementById('cm-text').value='';
+  document.getElementById('cm-msg').textContent = CONFIG.SCRIPT_URL ? '' : '⚠ Todavía no está conectado el script: el comentario no se va a guardar en la planilla.';
+  document.getElementById('comment-modal').classList.add('open');
+  setTimeout(()=>document.getElementById('cm-text').focus(),50);
+}
+function closeCommentModal(){ document.getElementById('comment-modal').classList.remove('open'); commentId=null; }
+async function submitComment(){
+  const t=TASKS.find(x=>x.id===commentId); if(!t) return;
+  const texto=document.getElementById('cm-text').value.trim();
+  if(!texto) return;
+  const btn=document.getElementById('cm-send'); btn.disabled=true; btn.textContent='Enviando...';
+  const autor=(CURRENT_USER&&CURRENT_USER.nombre)||'?';
+  await pushComment({ area:t.area, tarea:t.tarea, comentario:texto, autor:autor });
+  const fecha=new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'});
+  t.nota = (t.nota?t.nota+'\n':'') + '['+autor+' '+fecha+'] '+texto;
+  btn.disabled=false; btn.textContent='Enviar';
+  closeCommentModal(); renderAll();
+  if(document.getElementById('view-areas').classList.contains('active')) renderAreas();
+  if(CONFIG.SCRIPT_URL) setTimeout(()=>refreshData(), 1800);
+}
+async function pushComment(payload){
+  if(!CONFIG.SCRIPT_URL) return false;
+  try{
+    await fetch(CONFIG.SCRIPT_URL,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(payload) });
+    return true;
+  }catch(e){ console.error('comment error',e); return false; }
+}
 </script>
 </body>
 </html>
