@@ -609,7 +609,7 @@ async function loadTasks(){
             area,
             resp:r.Responsable||(AREAS[area]?AREAS[area].resp:''),
             venue:r.Venue||'', tarea:r.Tarea, estado:r.Estado||'Nueva',
-            vto:r.Vencimiento||'', nota:r.Nota||'', updated:r.Actualizado||''
+            vto:r.Vencimiento||'', nota:r.Nota||'', comentarios:r.Comentarios||'', updated:r.Actualizado||''
           });
         });
       }catch(e){ /* pestaña inexistente o vacía: se saltea */ }
@@ -758,6 +758,7 @@ function renderBoard(){
 function taskRow(t, mode){
   const opts=ESTADOS.map(e=>`<option ${e===t.estado?'selected':''}>${e}</option>`).join('');
   const note=t.nota?`<div class="tr-note"><b>Status:</b> ${escapeHtml(t.nota)}${t.updated?` · ${t.updated}`:''}</div>`:'';
+  const coms=t.comentarios?`<div class="tr-note" style="border-left:2px solid var(--accent);padding-left:9px;margin-top:5px;white-space:pre-wrap"><b>&#128172; Comentarios:</b>\n${escapeHtml(t.comentarios)}</div>`:'';
   const flag = t._flag==='nuevo' ? `<span class="badge flag-new">Nueva</span>`
     : t._flag==='estado' ? `<span class="badge flag-chg">Cambió estado</span>`
     : t._flag==='cambio' ? `<span class="badge flag-chg">Actualizada</span>` : '';
@@ -779,6 +780,7 @@ function taskRow(t, mode){
     <div class="tr-main">
       <div class="tr-title">${escapeHtml(t.tarea)}</div>
       ${note}
+      ${coms}
     </div>
     ${flag}
     ${ctxChip}
@@ -1094,7 +1096,7 @@ function openCommentModal(id){
   const t=TASKS.find(x=>x.id===id); if(!t) return;
   commentId=id;
   document.getElementById('cm-task').textContent=t.area+' — '+t.tarea;
-  document.getElementById('cm-prev').textContent=t.nota?('Notas actuales:\n'+t.nota):'(Sin notas todavía)';
+  document.getElementById('cm-prev').textContent=t.comentarios?('Comentarios anteriores:\n'+t.comentarios):'(Sin comentarios todavía)';
   document.getElementById('cm-text').value='';
   document.getElementById('cm-msg').textContent = CONFIG.SCRIPT_URL ? '' : '⚠ Todavía no está conectado el script: el comentario no se va a guardar en la planilla.';
   document.getElementById('comment-modal').classList.add('open');
@@ -1109,7 +1111,7 @@ async function submitComment(){
   const autor=(CURRENT_USER&&CURRENT_USER.nombre)||'?';
   await pushComment({ area:t.area, tarea:t.tarea, comentario:texto, autor:autor });
   const fecha=new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'});
-  t.nota = (t.nota?t.nota+'\n':'') + '['+autor+' '+fecha+'] '+texto;
+  t.comentarios = (t.comentarios?t.comentarios+'\n':'') + '['+autor+' '+fecha+'] '+texto;
   btn.disabled=false; btn.textContent='Enviar';
   closeCommentModal(); renderAll();
   if(document.getElementById('view-areas').classList.contains('active')) renderAreas();
