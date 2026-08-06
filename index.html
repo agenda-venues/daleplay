@@ -1119,10 +1119,12 @@ async function submitComment(){
 }
 async function pushComment(payload){
   if(!CONFIG.SCRIPT_URL) return false;
-  try{
-    await fetch(CONFIG.SCRIPT_URL,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(payload) });
-    return true;
-  }catch(e){ console.error('comment error',e); return false; }
+  const q='?area='+encodeURIComponent(payload.area)
+        +'&tarea='+encodeURIComponent(payload.tarea)
+        +'&comentario='+encodeURIComponent(payload.comentario)
+        +'&autor='+encodeURIComponent(payload.autor);
+  try{ await fetch(CONFIG.SCRIPT_URL+q,{ method:'GET', mode:'no-cors' }); return true; }
+  catch(e){ console.error('comment error',e); return false; }
 }
 </script>
 </body>
